@@ -12,10 +12,22 @@
 cmd=/usr/local/cmcluster/bin/cmviewcl
 log=/var/log/cluster_status
 ###
-
+###Chech if cluster was halted from os side.
+if (tail -100 /var/log/messages |grep 'Stopping LVM2');then
+    date >> $log
+    grep -C2 'Stopping LVM2' /var/log/messages >> $log
+	echo "Node halted not gracefully" >> $log
+	exit 9
+fi
+#Extended cluster status check
 if [ -f /nsr/ptausioffline_CV ]; then
    date >> /var/log/cluster_status
    echo "Backup job is running" > /var/log/cluster_status
+   exit 0
+elif  (tail -100 /var/log/messages |grep 'maintenance');then
+   date >> /var/log/cluster_status
+   grep -C2 'maintenance' /var/log/messages >> $log
+   echo "Cluster package is in maintenance." >> /var/log/cluster_status
    exit 0
 else
 	if $cmd |awk '{print $2}'|grep 'down'; then
