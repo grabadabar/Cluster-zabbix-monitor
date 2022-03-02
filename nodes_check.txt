@@ -1,0 +1,51 @@
+cmd=/usr/local/cmcluster/bin/cmviewcl 
+log=/var/log/cluster_status
+
+if [ -f /nsr/ptausioffline_CV ]; then
+   date >> /var/log/cluster_status
+   echo "Backup job is running" >> $log
+   exit 0
+else #node state and status check
+   if $cmd -f table -l node |awk '{print $2}'|grep -i 'down'; then
+      date >> $log
+	  echo 'One of nodes is down' >> $log
+	  $cmd -f table -l package|grep -i 'down'  >> $log
+	  exit 1 
+    elif $cmd -f table -l node |awk '{print $2}'|grep -i 'unknown'; then
+      date >> $log
+	  echo 'One of nodes is unknown' >> $log
+	  $cmd -f table -l package|grep -i 'unknown'  >> $log
+	  exit 2
+    elif $cmd -f table -l node |awk '{print $2}'|grep -i 'starting'; then
+      date >> $log
+	  echo 'One of nodes is starting' >> $log
+	  $cmd -f table -l package|grep -i 'starting'  >> $log
+	  exit 3
+    elif $cmd -f table -l node |awk '{print $3}'|grep -i 'failed'; then
+      date >> $log
+	  echo 'One of nodes state is failed' >> $log
+	  $cmd -f table -l package|grep -i 'failed'  >> $log
+	  exit 4	  
+	elif $cmd -f table -l node |awk '{print $3}'|grep -i 'reforming'; then
+      date >> $log
+	  echo 'One of nodes state is reforming' >> $log
+	  $cmd -f table -l package|grep -i 'reforming'  >> $log
+	  exit 5
+    elif $cmd -f table -l node |awk '{print $3}'|grep -i 'halted'; then
+      date >> $log
+	  echo 'One of nodes state is halted' >> $log
+	  $cmd -f table -l package|grep -i 'halted'  >> $log
+	  exit 6
+    elif $cmd -f table -l node |awk '{print $3}'|grep -i 'unknown'; then
+      date >> $log
+	  echo 'One of nodes state is unknown' >> $log
+	  $cmd -f table -l package|grep -i 'unknown'  >> $log
+	  exit 7
+    else 
+      date >> $log
+      echo "All nodes are up and running."	>> $log
+      exit 0
+    fi 
+fi
+	
+	  
